@@ -1,5 +1,7 @@
 # Norn
 
+[![GitHub Release](https://img.shields.io/github/v/release/idunn-cloud/norn?include_prereleases)](https://github.com/idunn-cloud/norn/releases)
+
 **Decide your plan's fate before apply.**
 
 Norn checks Terraform and OpenTofu plans against policies written in [CEL](https://cel.dev),
