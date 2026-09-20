@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 	"sort"
 
-	"github.com/idunn/norn/internal/engine"
-	"github.com/idunn/norn/internal/policy"
+	"github.com/idunn-cloud/norn/internal/engine"
+	"github.com/idunn-cloud/norn/internal/policy"
 )
 
 // SARIF writes findings in SARIF 2.1.0 format for code scanning systems.

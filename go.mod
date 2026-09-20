@@ -1,4 +1,4 @@
-module github.com/idunn/norn
+module github.com/idunn-cloud/norn
 
 go 1.23.0
 

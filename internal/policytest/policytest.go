@@ -11,10 +11,10 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/idunn/norn/internal/engine"
-	"github.com/idunn/norn/internal/plan"
-	"github.com/idunn/norn/internal/policy"
-	"github.com/idunn/norn/internal/report"
+	"github.com/idunn-cloud/norn/internal/engine"
+	"github.com/idunn-cloud/norn/internal/plan"
+	"github.com/idunn-cloud/norn/internal/policy"
+	"github.com/idunn-cloud/norn/internal/report"
 	"gopkg.in/yaml.v3"
 )
 

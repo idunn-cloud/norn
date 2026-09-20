@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/idunn/norn/internal/policy"
+	"github.com/idunn-cloud/norn/internal/policy"
 )
 
 func TestLoadSuites(t *testing.T) {

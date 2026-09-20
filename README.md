@@ -64,7 +64,7 @@ These are planned, but not finished in the current alpha:
 Until the first packaged release exists, run Norn from source or install it with Go.
 
 ```sh
-go install github.com/idunn/norn/cmd/norn@latest
+go install github.com/idunn-cloud/norn/cmd/norn@latest
 
 terraform plan -out tfplan
 terraform show -json tfplan > plan.json
