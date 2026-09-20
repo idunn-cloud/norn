@@ -1,0 +1,29 @@
+apiVersion: norn.idunn.cloud/v1alpha1
+kind: PolicySet
+metadata:
+  name: azure-storage
+policies:
+  - id: az-storage-https-only
+    severity: high
+    enforcement: mandatory
+    match:
+      types: [azurerm_storage_account]
+    expression: after.https_traffic_only_enabled == true
+    message: Storage accounts must only accept HTTPS traffic.
+
+  - id: az-storage-min-tls12
+    severity: medium
+    enforcement: mandatory
+    match:
+      types: [azurerm_storage_account]
+    expression: after.min_tls_version in ["TLS1_2", "TLS1_3"]
+    message: Storage accounts must require TLS 1.2 or newer.
+
+  - id: az-storage-no-public-nested-items
+    description: Blocks anonymous public access to containers and blobs.
+    severity: high
+    enforcement: overridable
+    match:
+      types: [azurerm_storage_account]
+    expression: after.allow_nested_items_to_be_public == false
+    message: Disable anonymous blob access (allow_nested_items_to_be_public = false).

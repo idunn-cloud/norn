@@ -1,0 +1,30 @@
+apiVersion: norn.idunn.cloud/v1alpha1
+kind: PolicySet
+metadata:
+  name: azure-keyvault
+policies:
+  - id: az-keyvault-purge-protection
+    severity: medium
+    enforcement: mandatory
+    match:
+      types: [azurerm_key_vault]
+    expression: after.purge_protection_enabled == true
+    message: Key Vaults must have purge protection enabled.
+
+  - id: az-keyvault-no-delete
+    description: Destroying or replacing a Key Vault needs a deliberate, logged override.
+    severity: high
+    enforcement: overridable
+    match:
+      types: [azurerm_key_vault]
+      actions: [delete, replace]
+    expression: "false"
+    message: This plan destroys a Key Vault. Re-run with --override az-keyvault-no-delete if intended.
+
+  - id: az-sql-no-public-network
+    severity: medium
+    enforcement: advisory
+    match:
+      types: [azurerm_mssql_server]
+    expression: after.public_network_access_enabled == false
+    message: Prefer private endpoints over public network access for SQL servers.

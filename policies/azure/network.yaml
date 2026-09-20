@@ -1,0 +1,25 @@
+apiVersion: norn.idunn.cloud/v1alpha1
+kind: PolicySet
+metadata:
+  name: azure-network
+policies:
+  - id: az-nsg-no-public-admin-ports
+    description: Inbound SSH and RDP must not be open to the internet.
+    severity: high
+    enforcement: mandatory
+    match:
+      types: [azurerm_network_security_rule]
+    # Compliant unless the rule allows inbound 22/3389 (or all ports) from anywhere.
+    # Port ranges such as "20-25" are not expanded yet; that needs a range helper.
+    expression: |
+      !(
+        after.access == "Allow" &&
+        after.direction == "Inbound" &&
+        after.source_address_prefix in ["*", "0.0.0.0/0", "Internet", "Any"] &&
+        (
+          after.destination_port_range in ["*", "22", "3389"] ||
+          (after.destination_port_ranges != null &&
+           after.destination_port_ranges.exists(p, p in ["22", "3389"]))
+        )
+      )
+    message: SSH/RDP must not be reachable from the internet; use Bastion or a restricted source range.

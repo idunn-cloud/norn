@@ -1,0 +1,110 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.9.5",
+  "resource_changes": [
+    {
+      "address": "azurerm_resource_group.main",
+      "mode": "managed",
+      "type": "azurerm_resource_group",
+      "name": "main",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": ["no-op"],
+        "before": {"name": "rg-norn-demo", "location": "westeurope"},
+        "after": {"name": "rg-norn-demo", "location": "westeurope"},
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "azurerm_network_security_rule.ssh_open",
+      "mode": "managed",
+      "type": "azurerm_network_security_rule",
+      "name": "ssh_open",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "allow-ssh",
+          "priority": 100,
+          "direction": "Inbound",
+          "access": "Allow",
+          "protocol": "Tcp",
+          "source_port_range": "*",
+          "destination_port_range": "22",
+          "destination_port_ranges": null,
+          "source_address_prefix": "*",
+          "destination_address_prefix": "*"
+        },
+        "after_unknown": {"id": true},
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "azurerm_network_security_rule.from_lb",
+      "mode": "managed",
+      "type": "azurerm_network_security_rule",
+      "name": "from_lb",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "allow-ssh-from-lb",
+          "priority": 110,
+          "direction": "Inbound",
+          "access": "Allow",
+          "protocol": "Tcp",
+          "source_port_range": "*",
+          "destination_port_range": "22",
+          "destination_port_ranges": null,
+          "destination_address_prefix": "*"
+        },
+        "after_unknown": {"id": true, "source_address_prefix": true},
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "azurerm_storage_account.logs",
+      "mode": "managed",
+      "type": "azurerm_storage_account",
+      "name": "logs",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "name": "stnorndemologs",
+          "account_tier": "Standard",
+          "account_replication_type": "LRS",
+          "https_traffic_only_enabled": true,
+          "min_tls_version": "TLS1_0",
+          "allow_nested_items_to_be_public": false,
+          "public_network_access_enabled": true
+        },
+        "after_unknown": {"id": true, "primary_blob_endpoint": true},
+        "before_sensitive": false,
+        "after_sensitive": {}
+      }
+    },
+    {
+      "address": "azurerm_key_vault.legacy",
+      "mode": "managed",
+      "type": "azurerm_key_vault",
+      "name": "legacy",
+      "provider_name": "registry.terraform.io/hashicorp/azurerm",
+      "change": {
+        "actions": ["delete"],
+        "before": {"name": "kv-norn-legacy", "sku_name": "standard", "purge_protection_enabled": false},
+        "after": null,
+        "after_unknown": {},
+        "before_sensitive": {},
+        "after_sensitive": false
+      }
+    }
+  ]
+}
