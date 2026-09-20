@@ -108,6 +108,8 @@ unexpected non-pass result fails the test, so new warnings and failures do not s
 
 ## Roadmap
 
+See [`docs/roadmap.md`](docs/roadmap.md) for the concrete repo-mapped delivery plan.
+
 - GitHub/GitLab annotations
 - Exceptions with owners and expiry dates
 - Helper functions: CIDR/IP checks, port-range expansion, `changed("attr")`, relationship lookups
