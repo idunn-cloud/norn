@@ -24,6 +24,7 @@ go install github.com/idunn/norn/cmd/norn@latest
 terraform plan -out tfplan
 terraform show -json tfplan > plan.json
 norn check --plan plan.json --policies ./policies
+norn check --plan plan.json --policies ./policies --format sarif > results.sarif
 ```
 
 ```
@@ -66,14 +67,48 @@ from known values are decided; checks that genuinely depend on unknown values re
 `UNKNOWN` instead of a wrong pass. `onUnknown: warn | fail | pass` sets how each policy
 treats that case (default `warn`).
 
+## Testing policies
+
+Fixture tests let policy authors lock behavior against real plan JSON.
+
+```sh
+norn test --policies ./policies --tests ./testdata/tests
+```
+
+```yaml
+apiVersion: norn.idunn.cloud/v1alpha1
+kind: PolicyTest
+metadata:
+  name: smoke
+cases:
+  - name: default-fixture
+    plan: ../plan.json
+    want:
+      - policy: az-nsg-no-public-admin-ports
+        address: azurerm_network_security_rule.ssh_open
+        outcome: FAIL
+```
+
+Expectations are matched by `policy` + `address`. Unlisted `PASS` results are ignored, but any
+unexpected non-pass result fails the test, so new warnings and failures do not slip in silently.
+
+## Output formats
+
+`norn check --format text|json|sarif`
+
+- `text`: human-readable CLI output.
+- `json`: all findings plus the run summary.
+- `sarif`: SARIF 2.1.0 for GitHub code scanning and other scanners.
+
 ## Exit codes
 
-`0` means no blocking findings, `1` means blocking findings, and `2` means a usage, policy or plan error.
+`norn check`: `0` means no blocking findings, `1` means blocking findings, and `2` means a usage, policy or plan error.
+
+`norn test`: `0` means all test cases passed, `1` means at least one case failed, and `2` means a usage, policy or fixture error.
 
 ## Roadmap
 
-- SARIF output and GitHub/GitLab annotations
-- `norn test`: unit tests for policies against fixture plans
+- GitHub/GitLab annotations
 - Exceptions with owners and expiry dates
 - Helper functions: CIDR/IP checks, port-range expansion, `changed("attr")`, relationship lookups
 - Policy bundles distributed as OCI artifacts

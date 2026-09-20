@@ -3,8 +3,8 @@ package engine
 import (
 	"slices"
 
-	"github.com/google/cel-go/cel"
-	"github.com/google/cel-go/interpreter"
+	"cel.dev/cel-go/cel"
+	"cel.dev/cel-go/interpreter"
 )
 
 // unknownPatterns turns Terraform's after_unknown tree into CEL attribute patterns.

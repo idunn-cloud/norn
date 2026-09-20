@@ -1,0 +1,37 @@
+apiVersion: norn.idunn.cloud/v1alpha1
+kind: PolicyTest
+metadata:
+  name: smoke
+cases:
+  - name: default-fixture
+    plan: ../plan.json
+    want:
+      - policy: az-nsg-no-public-admin-ports
+        address: azurerm_network_security_rule.ssh_open
+        outcome: FAIL
+      - policy: az-nsg-no-public-admin-ports
+        address: azurerm_network_security_rule.from_lb
+        outcome: UNKNOWN
+      - policy: az-storage-min-tls12
+        address: azurerm_storage_account.logs
+        outcome: FAIL
+      - policy: az-keyvault-no-delete
+        address: azurerm_key_vault.legacy
+        outcome: FAIL
+
+  - name: keyvault-delete-overridden
+    plan: ../plan.json
+    overrides: [az-keyvault-no-delete]
+    want:
+      - policy: az-nsg-no-public-admin-ports
+        address: azurerm_network_security_rule.ssh_open
+        outcome: FAIL
+      - policy: az-nsg-no-public-admin-ports
+        address: azurerm_network_security_rule.from_lb
+        outcome: UNKNOWN
+      - policy: az-storage-min-tls12
+        address: azurerm_storage_account.logs
+        outcome: FAIL
+      - policy: az-keyvault-no-delete
+        address: azurerm_key_vault.legacy
+        outcome: OVERRIDDEN

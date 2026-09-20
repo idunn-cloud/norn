@@ -9,9 +9,12 @@ import (
 	"os"
 	"strings"
 
+	"encoding/json"
+
 	"github.com/idunn/norn/internal/engine"
 	"github.com/idunn/norn/internal/plan"
 	"github.com/idunn/norn/internal/policy"
+	"github.com/idunn/norn/internal/policytest"
 	"github.com/idunn/norn/internal/report"
 )
 
@@ -21,6 +24,7 @@ const usage = `norn: policy checks for Terraform and OpenTofu plans, written in 
 
 Usage:
   norn check --plan plan.json [--policies ./policies] [flags]
+  norn test --tests ./testdata/tests [--policies ./policies]
   norn version
 
 Create the plan file with:
@@ -39,6 +43,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 	switch args[0] {
 	case "check":
 		return check(args[1:], stdout, stderr)
+	case "test":
+		return testPolicies(args[1:], stdout, stderr)
 	case "version", "--version":
 		fmt.Fprintln(stdout, version)
 		return 0
@@ -55,7 +61,7 @@ func check(args []string, stdout, stderr io.Writer) int {
 	fs.SetOutput(stderr)
 	planPath := fs.String("plan", "", "plan JSON from `terraform show -json` (required)")
 	policyPath := fs.String("policies", "policies", "policy file or directory")
-	format := fs.String("format", "text", "output format: text or json")
+	format := fs.String("format", "text", "output format: text, json or sarif")
 	overrideList := fs.String("override", "", "comma-separated IDs of overridable policies to override for this run")
 	verbose := fs.Bool("verbose", false, "also list passing checks (text output)")
 	if err := fs.Parse(args); err != nil {
@@ -72,8 +78,8 @@ func check(args []string, stdout, stderr io.Writer) int {
 	if *planPath == "" {
 		return fail(errors.New("--plan is required"))
 	}
-	if *format != "text" && *format != "json" {
-		return fail(fmt.Errorf("unknown --format %q (want text or json)", *format))
+	if *format != "text" && *format != "json" && *format != "sarif" {
+		return fail(fmt.Errorf("unknown --format %q (want text, json or sarif)", *format))
 	}
 
 	policies, err := policy.Load(*policyPath)
@@ -99,6 +105,10 @@ func check(args []string, stdout, stderr io.Writer) int {
 		if sum, err = report.JSON(stdout, findings, overrides); err != nil {
 			return fail(err)
 		}
+	} else if *format == "sarif" {
+		if sum, err = report.SARIF(stdout, findings, overrides, version, *planPath); err != nil {
+			return fail(err)
+		}
 	} else {
 		sum = report.Text(stdout, findings, overrides, *verbose)
 	}
@@ -110,6 +120,62 @@ func check(args []string, stdout, stderr io.Writer) int {
 
 // parseOverrides only accepts IDs of overridable policies, so a typo or an
 // attempt to override a mandatory policy is an error rather than a silent no-op.
+func testPolicies(args []string, stdout, stderr io.Writer) int {
+	fs := flag.NewFlagSet("test", flag.ContinueOnError)
+	fs.SetOutput(stderr)
+	policyPath := fs.String("policies", "policies", "policy file or directory")
+	testPath := fs.String("tests", "testdata/tests", "test file or directory")
+	format := fs.String("format", "text", "output format: text or json")
+	if err := fs.Parse(args); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return 0
+		}
+		return 2
+	}
+
+	fail := func(err error) int {
+		fmt.Fprintf(stderr, "norn: %v\n", err)
+		return 2
+	}
+	if *format != "text" && *format != "json" {
+		return fail(fmt.Errorf("unknown --format %q (want text or json)", *format))
+	}
+
+	policies, err := policy.Load(*policyPath)
+	if err != nil {
+		return fail(err)
+	}
+	suites, err := policytest.LoadSuites(*testPath)
+	if err != nil {
+		return fail(err)
+	}
+
+	if *format == "json" {
+		result, err := policytest.Run(io.Discard, suites, policies)
+		if err != nil {
+			return fail(err)
+		}
+		enc := json.NewEncoder(stdout)
+		enc.SetIndent("", "  ")
+		if err := enc.Encode(result); err != nil {
+			return fail(err)
+		}
+		if result.Summary.Failed > 0 {
+			return 1
+		}
+		return 0
+	}
+
+	result, err := policytest.Run(stdout, suites, policies)
+	if err != nil {
+		return fail(err)
+	}
+	if result.Summary.Failed > 0 {
+		return 1
+	}
+	return 0
+}
+
 func parseOverrides(list string, ps []policy.Policy) (map[string]bool, error) {
 	byID := make(map[string]policy.Enforcement, len(ps))
 	for _, p := range ps {
