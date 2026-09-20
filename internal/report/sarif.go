@@ -24,7 +24,7 @@ func SARIF(w io.Writer, fs []engine.Finding, overrides map[string]bool, toolVers
 		Runs: []sarifRun{{
 			Tool: sarifTool{Driver: sarifDriver{
 				Name:           "norn",
-				InformationURI: "https://github.com/idunn/norn",
+				InformationURI: "https://github.com/idunn-cloud/norn",
 				Version:        toolVersion,
 				Rules:          rules,
 			}},
